@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pro Calculator — Premium Suite</title>
+  <meta name="description" content="Pro Calculator — Premium calculators: BMI, Age, EMI, Calorie & Percentage. Beautiful UI, fast and responsive." />
+  <meta name="keywords" content="BMI calculator, age calculator, EMI calculator, calorie estimator, percentage calculator, Pro Calculator" />
+  <meta name="author" content="Pro Calculator" />
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    :root{
+      --bg-1:#071027; --bg-2:#081a33;
+      --muted: rgba(230,240,251,0.78);
+      --glass: rgba(255,255,255,0.03);
+      --accent1: #7c3aed;
+      --accent2: #06b6d4;
+      --ok: #22c55e; --warn: #f59e0b; --bad: #ef4444;
+      --radius:14px;
+      --maxWidth:1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      color:#e9f5ff;
+      background:
+        radial-gradient(800px 420px at 10% 10%, rgba(124,58,237,0.12), transparent 8%),
+        radial-gradient(700px 360px at 95% 90%, rgba(6,182,212,0.10), transparent 10%),
+        linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      padding:28px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      justify-content:center;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:var(--maxWidth);
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:24px;
+      align-items:start;
+    }
+    @media(max-width:980px){ .wrap{ grid-template-columns:1fr; padding:12px } }
+
+    /* Header */
+    header{
+      grid-column:1/-1;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--accent1),var(--accent2));font-weight:800;font-size:20px;color:#fff;
+      box-shadow:0 12px 40px rgba(6,11,25,0.6);
+    }
+    h1{margin:0;font-size:20px}
+    .sub{margin:0;color:var(--muted);font-size:13px}
+
+    .top-actions{display:flex;gap:10px}
+    .btn{ padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:13px }
+    .btn.primary{ background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; box-shadow:0 10px 28px rgba(124,58,237,0.12) }
+    .btn.ghost{ background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted) }
+
+    /* Panel */
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,0.03);
+      box-shadow:0 12px 40px rgba(2,6,18,0.6);backdrop-filter:blur(8px);
+    }
+
+    .hero{ display:flex; gap:16px; align-items:center; padding:12px; border-radius:12px; margin-bottom:14px; }
+    .hero-left{flex:1}
+    .hero h2{margin:0;font-size:18px}
+    .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    /* Shortcuts grid */
+    .shortcuts{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+    }
+    @media(max-width:900px){ .shortcuts{ grid-template-columns:repeat(2,1fr) } }
+    @media(max-width:560px){ .shortcuts{ grid-template-columns:1fr } }
+
+    .shortcut{
+      display:flex;flex-direction:column;align-items:center;padding:18px;border-radius:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));
+      border:1px solid rgba(255,255,255,0.03);text-decoration:none;color:inherit;
+      transition:transform .16s, box-shadow .16s; cursor:pointer;
+    }
+    .shortcut:hover{ transform:translateY(-8px); box-shadow:0 18px 40px rgba(6,11,25,0.55); }
+    .shortcut:focus{ outline:3px solid rgba(124,58,237,0.14) }
+
+    .icon{ width:72px;height:72px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:white; box-shadow:0 10px 30px rgba(6,11,25,0.5); }
+    .icon.bmi{ background:linear-gradient(135deg,#ff7a18,#ffb199) }
+    .icon.age{ background:linear-gradient(135deg,#06b6d4,#60a5fa) }
+    .icon.cal{ background:linear-gradient(135deg,#fb7185,#f97316) }
+    .icon.pct{ background:linear-gradient(135deg,#06d6a0,#118ab2) }
+    .icon.emi{ background:linear-gradient(135deg,#7c3aed,#0ea5a3) }
+
+    .shortcut h3{ margin:8px 0 0;font-size:15px }
+    .shortcut p{ margin:6px 0 0;color:var(--muted);font-size:13px;text-align:center }
+
+    /* Work area (calculators) */
+    .work{ margin-top:18px; display:grid; gap:18px }
+    .card{ border-radius:12px;padding:16px;background:linear-gradient(180deg, rgba(12,17,29,0.6), rgba(8,12,20,0.35)); border:1px solid rgba(255,255,255,0.03); }
+    .card .head{ display:flex; align-items:center; gap:12px }
+    .card h3{ margin:0;font-size:16px }
+    .muted{ color:var(--muted); font-size:13px; margin-top:6px }
+
+    .form{ display:flex; gap:12px; flex-wrap:wrap; margin-top:12px }
+    .field{ flex:1; min-width:150px; display:flex; flex-direction:column; gap:8px }
+    label{ font-size:13px; color:var(--muted) }
+    input[type="number"], input[type="date"], select{ padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); color:#eaf6ff; outline:none; font-size:14px }
+    input::placeholder{ color: rgba(230,240,251,0.45) }
+
+    .actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap }
+    .result{ margin-top:12px; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008)); border:1px solid rgba(255,255,255,0.03); font-weight:700 }
+    .result.good{ box-shadow:0 12px 30px rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.08) }
+    .result.warn{ box-shadow:0 12px 30px rgba(250,204,21,0.06); border-color: rgba(250,204,21,0.06) }
+    .result.bad{ box-shadow:0 12px 30px rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.08) }
+
+    /* aside */
+    .aside{ display:flex; flex-direction:column; gap:14px; position:sticky; top:28px; align-self:start }
+    .adbox{ padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px dashed rgba(255,255,255,0.03); min-height:160px; display:flex; align-items:center; justify-content:center; color:var(--muted) }
+
+    footer{ grid-column:1/-1; margin-top:12px; text-align:center; color:var(--muted); font-size:13px }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo">PC</div>
+        <div>
+          <h1>Pro Calculator</h1>
+          <p class="sub">All your calculators in one premium place</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <a class="btn ghost" href="#features">Features</a>
+        <a class="btn primary" href="#bmi">Open Calculator</a>
+      </div>
+    </header>
+
+    <!-- Left: panel -->
+    <main class="panel" aria-labelledby="hero-heading">
+      <section class="hero" id="hero">
+        <div class="hero-left">
+          <h2 id="hero-heading">Precision. Speed. Design.</h2>
+          <p class="muted">Click a card to jump to a calculator below — BMI, Age, Calorie, Percentage, EMI.</p>
+        </div>
+      </section>
+
+      <!-- Shortcuts -->
+      <section id="features" class="shortcuts" aria-label="Calculator shortcuts">
+        <a class="shortcut" href="#bmi" title="BMI Calculator" tabindex="0">
+          <div class="icon bmi"><i class="fas fa-weight"></i></div>
+          <h3>BMI</h3><p>Healthy weight & BMI</p>
+        </a>
+
+        <a class="shortcut" href="#age" title="Age Calculator" tabindex="0">
+          <div class="icon age"><i class="fas fa-birthday-cake"></i></div>
+          <h3>Age</h3><p>Years • months • days</p>
+        </a>
+
+        <a class="shortcut" href="#calorie" title="Calorie Estimator" tabindex="0">
+          <div class="icon cal"><i class="fas fa-apple-alt"></i></div>
+          <h3>Calorie</h3><p>Daily kcal estimate</p>
+        </a>
+
+        <a class="shortcut" href="#percentage" title="Percentage Tool" tabindex="0">
+          <div class="icon pct"><i class="fas fa-percent"></i></div>
+          <h3>Percentage</h3><p>X% of Y, % change</p>
+        </a>
+
+        <a class="shortcut" href="#emi" title="EMI Calculator" tabindex="0">
+          <div class="icon emi"><i class="fas fa-coins"></i></div>
+          <h3>EMI</h3><p>Monthly EMI & totals</p>
+        </a>
+
+        <a class="shortcut" href="#all" title="All Calculators" tabindex="0">
+          <div class="icon" style="background:linear-gradient(135deg,#9f7aea,#60a5fa)"><i class="fas fa-th-large"></i></div>
+          <h3>All</h3><p>Open full toolset</p>
+        </a>
+      </section>
+
+      <!-- Calculators -->
+      <section class="work" id="all" aria-live="polite">
+
+        <!-- BMI -->
+        <article id="bmi" class="card" aria-labelledby="bmi-title">
+          <div class="head"><h3 id="bmi-title">BMI Calculator</h3></div>
+          <div class="muted">Enter weight (kg) and height (cm)</div>
+
+          <div class="form" role="form" aria-label="BMI form">
+            <div class="field">
+              <label>Weight (kg)</label>
+              <input id="bmi_w" type="number" placeholder="72.5" min="1" step="0.1" />
+            </div>
+
+            <div class="field">
+              <label>Height (cm)</label>
+              <input id="bmi_h" type="number" placeholder="172" min="30" step="0.1" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="bmi_calc">Calculate</button>
+            <button class="btn ghost" id="bmi_reset">Reset</button>
+          </div>
+
+          <div id="bmi_out" class="result" style="display:none"></div>
+        </article>
+
+        <!-- Age -->
+        <article id="age" class="card" aria-labelledby="age-title">
+          <div class="head"><h3 id="age-title">Age Calculator</h3></div>
+          <div class="muted">Select your date of birth</div>
+
+          <div class="form" role="form" aria-label="Age form">
+            <div class="field">
+              <label>Date of Birth</label>
+              <input id="age_dob" type="date" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="age_calc">Calculate</button>
+            <button class="btn ghost" id="age_reset">Reset</button>
+          </div>
+
+          <div id="age_out" class="result" style="display:none"></div>
+        </article>
+
+        <!-- Calorie -->
+        <article id="calorie" class="card" aria-labelledby="cal-title">
+          <div class="head"><h3 id="cal-title">Calorie Estimator</h3></div>
+          <div class="muted">Mifflin–St Jeor: enter gender, age, weight (kg), height (cm)</div>
+
+          <div class="form" role="form" aria-label="Calorie form">
+            <div class="field">
+              <label>Gender</label>
+              <select id="cal_gender"><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+            </div>
+            <div class="field"><label>Age (years)</label><input id="cal_age" type="number" min="10" step="1" /></div>
+            <div class="field"><label>Weight (kg)</label><input id="cal_weight" type="number" min="10" step="0.1" /></div>
+            <div class="field"><label>Height (cm)</label><input id="cal_height" type="number" min="50" step="0.1" /></div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label style="font-size:13px;color:var(--muted)">Activity</label>
+            <select id="cal_activity" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#eaf6ff">
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Lightly active</option>
+              <option value="1.55">Moderately active</option>
+              <option value="1.725">Very active</option>
+              <option value="1.9">Extra active</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="cal_calc">Estimate</button>
+            <button class="btn ghost" id="cal_reset">Reset</button>
+          </div>
+
+          <div id="cal_out" class="result" style="display:none"></div>
+        </article>
+
+        <!-- Percentage -->
+        <article id="percentage" class="card" aria-labelledby="pct-title">
+          <div class="head"><h3 id="pct-title">Percentage Tool</h3></div>
+          <div class="muted">Modes: X% of Y, What % is X of Y, Percentage change</div>
+
+          <div class="form" role="form" aria-label="Percentage form">
+            <div class="field">
+              <label>Mode</label>
+              <select id="pct_mode">
+                <option value="xPercentOfY">X% of Y</option>
+                <option value="whatPercentXofY">What % is X of Y</option>
+                <option value="changePercent">Percentage change (from → to)</option>
+              </select>
+            </div>
+            <div class="field"><label id="pct_label_a">Value A</label><input id="pct_a" type="number" step="0.01" /></div>
+            <div class="field"><label id="pct_label_b">Value B</label><input id="pct_b" type="number" step="0.01" /></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="pct_calc">Calculate</button>
+            <button class="btn ghost" id="pct_reset">Reset</button>
+          </div>
+
+          <div id="pct_out" class="result" style="display:none"></div>
+        </article>
+
+        <!-- EMI -->
+        <article id="emi" class="card" aria-labelledby="emi-title">
+          <div class="head"><h3 id="emi-title">EMI Calculator</h3></div>
+          <div class="muted">Compute monthly EMI, total payment & interest</div>
+
+          <div class="form" role="form" aria-label="EMI form">
+            <div class="field"><label>Principal</label><input id="emi_p" type="number" placeholder="e.g., 500000" /></div>
+            <div class="field"><label>Annual Interest (%)</label><input id="emi_r" type="number" placeholder="e.g., 7.5" step="0.01" /></div>
+            <div class="field"><label>Tenure (years)</label><input id="emi_y" type="number" placeholder="e.g., 5" /></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="emi_calc">Calculate</button>
+            <button class="btn ghost" id="emi_reset">Reset</button>
+          </div>
+
+          <div id="emi_out" class="result" style="display:none"></div>
+        </article>
+
+      </section>
+    </main>
+
+    <!-- Right aside -->
+    <aside class="aside">
+      <div class="adbox" role="complementary">
+        <!-- Ad placeholder -->
+        Ad space — paste your Google AdSense code here when ready
+      </div>
+
+      <div class="adbox" style="min-height:80px">
+        <strong style="display:block">Quick Links</strong>
+        <div style="margin-top:8px;color:var(--muted)">
+          <a href="#bmi" style="color:inherit;text-decoration:underline">BMI</a> •
+          <a href="#age" style="color:inherit;text-decoration:underline">Age</a> •
+          <a href="#calorie" style="color:inherit;text-decoration:underline">Calorie</a>
+        </div>
+      </div>
+
+      <div class="adbox" style="text-align:center">
+        © <span id="year"></span> Pro Calculator
+      </div>
+    </aside>
+
+    <footer>Fast • Clean • Premium</footer>
+  </div>
+
+  <script>
+    // Helpers
+    const $ = id => document.getElementById(id);
+    const round = (v,d=2) => Math.round(v * Math.pow(10,d)) / Math.pow(10,d);
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"], .shortcut').forEach(el=>{
+      el.addEventListener('click', function(e){
+        const href = this.getAttribute('href');
+        if (!href || !href.startsWith('#')) return;
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) target.scrollIntoView({behavior:'smooth', block:'center'});
+      });
+    });
+
+    // Keyboard activation for shortcuts
+    document.querySelectorAll('.shortcut').forEach(el=>{
+      el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } });
+    });
+
+    // Set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ---------- BMI ---------- */
+    $('bmi_calc').addEventListener('click', ()=>{
+      const w = parseFloat($('bmi_w').value);
+      const h = parseFloat($('bmi_h').value);
+      const out = $('bmi_out');
+      if (!isFinite(w) || w <= 0){ alert('Please enter a valid weight in kg'); return; }
+      if (!isFinite(h) || h <= 0){ alert('Please enter a valid height in cm'); return; }
+
+      const kg = w;
+      const meters = h / 100;
+      if (meters <= 0){ alert('Height must be > 0'); return; }
+      const bmi = kg / (meters * meters);
+      const bmiR = round(bmi,1);
+      const minW = 18.5 * meters * meters;
+      const maxW = 24.9 * meters * meters;
+
+      let cls=''; let cat='';
+      if (bmi < 18.5){ cls='warn'; cat='Underweight'; }
+      else if (bmi <= 24.9){ cls='good'; cat='Normal weight'; }
+      else if (bmi <= 29.9){ cls='warn'; cat='Overweight'; }
+      else { cls='bad'; cat='Obesity'; }
+
+      out.style.display='block';
+      out.className = 'result ' + cls;
+      out.innerHTML = `<div style="font-size:15px">BMI: <strong>${bmiR}</strong> — ${cat}</div>
+                       <div style="margin-top:8px;color:var(--muted)">Healthy range for your height: <strong>${round(minW,1)} kg</strong> — <strong>${round(maxW,1)} kg</strong></div>`;
+    });
+    $('bmi_reset').addEventListener('click', ()=>{ $('bmi_w').value=''; $('bmi_h').value=''; $('bmi_out').style.display='none'; });
+
+    /* ---------- AGE ---------- */
+    $('age_calc').addEventListener('click', ()=>{
+      const val = $('age_dob').value; const out = $('age_out');
+      if (!val){ alert('Please select your date of birth'); return; }
+      const dob = new Date(val); const now = new Date();
+      if (dob > now){ alert('DOB cannot be in the future'); return; }
+
+      let years = now.getFullYear() - dob.getFullYear();
+      let months = now.getMonth() - dob.getMonth();
+      let days = now.getDate() - dob.getDate();
+
+      if (days < 0){
+        const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        days += prevMonth.getDate();
+        months -= 1;
+      }
+      if (months < 0){
+        months += 12;
+        years -= 1;
+      }
+
+      out.style.display='block'; out.className='result';
+      out.innerHTML = `<div style="font-size:15px">You are <strong>${years}</strong> years, <strong>${months}</strong> months, and <strong>${days}</strong> days old.</div>
+                       <div style="margin-top:8px;color:var(--muted)">Born: <strong>${dob.toDateString()}</strong></div>`;
+    });
+    $('age_reset').addEventListener('click', ()=>{ $('age_dob').value=''; $('age_out').style.display='none'; });
+
+    /* ---------- CALORIE ---------- */
+    $('cal_calc').addEventListener('click', ()=>{
+      const gender = $('cal_gender').value;
+      const age = parseFloat($('cal_age').value);
+      const weight = parseFloat($('cal_weight').value);
+      const height = parseFloat($('cal_height').value);
+      const activity = parseFloat($('cal_activity').value);
+      const out = $('cal_out');
+
+      if (!isFinite(age) || age <= 0){ alert('Enter valid age'); return; }
+      if (!isFinite(weight) || weight <= 0){ alert('Enter valid weight in kg'); return; }
+      if (!isFinite(height) || height <= 0){ alert('Enter valid height in cm'); return; }
+
+      let bmr = 0;
+      if (gender === 'female') bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      else bmr = 10 * weight + 6.25 * height - 5 * age + 5; // male & other
+
+      const maintenance = Math.round(bmr * activity);
+      const lose = Math.max(0, maintenance - 500);
+      const gain = maintenance + 500;
+
+      out.style.display='block'; out.className='result';
+      out.innerHTML = `<div style="font-size:15px">BMR: <strong>${Math.round(bmr)}</strong> kcal/day</div>
+                       <div style="margin-top:8px;color:var(--muted)">Maintenance (activity x BMR): <strong>${maintenance}</strong> kcal/day</div>
+                       <div style="margin-top:6px;font-size:13px;color:var(--muted)">Approx. to lose ~0.5kg/week: ~<strong>${lose}</strong> kcal/day | Gain: ~<strong>${gain}</strong> kcal/day</div>`;
+    });
+    $('cal_reset').addEventListener('click', ()=>{ $('cal_gender').value='male'; $('cal_age').value=''; $('cal_weight').value=''; $('cal_height').value=''; $('cal_out').style.display='none'; });
+
+    /* ---------- PERCENTAGE ---------- */
+    const pctMode = $('pct_mode'), pctA = $('pct_a'), pctB = $('pct_b'), pctOut = $('pct_out');
+    function updatePct(){
+      const m = pctMode.value;
+      if (m === 'xPercentOfY'){ $('pct_label_a').textContent='X (percent)'; $('pct_label_b').textContent='Y (value)'; pctA.placeholder='20'; pctB.placeholder='400'; }
+      else if (m === 'whatPercentXofY'){ $('pct_label_a').textContent='X (part)'; $('pct_label_b').textContent='Y (whole)'; pctA.placeholder='80'; pctB.placeholder='200'; }
+      else { $('pct_label_a').textContent='Original (from)'; $('pct_label_b').textContent='New (to)'; pctA.placeholder='120'; pctB.placeholder='150'; }
+    }
+    pctMode.addEventListener('change', updatePct); updatePct();
+
+    $('pct_calc').addEventListener('click', ()=>{
+      const mode = pctMode.value, A = parseFloat(pctA.value), B = parseFloat(pctB.value);
+      if (!isFinite(A) || !isFinite(B)){ alert('Please enter valid numbers'); return; }
+      let html = '';
+      if (mode === 'xPercentOfY'){
+        const val = (A/100) * B;
+        html = `${A}% of ${B} = <strong>${round(val,2)}</strong>`;
+      } else if (mode === 'whatPercentXofY'){
+        if (B === 0){ alert('Whole (Y) cannot be zero'); return; }
+        const pct = (A / B) * 100;
+        html = `${A} is <strong>${round(pct,2)}%</strong> of ${B}`;
+      } else {
+        if (A === 0){ alert('Original value cannot be zero'); return; }
+        const change = ((B - A) / A) * 100;
+        const dir = change >= 0 ? 'increase' : 'decrease';
+        html = `Change: <strong>${round(Math.abs(change),2)}%</strong> (${dir}) — from ${A} to ${B}`;
+      }
+      pctOut.style.display='block'; pctOut.className='result'; pctOut.innerHTML = html;
+    });
+    $('pct_reset').addEventListener('click', ()=>{ pctA.value=''; pctB.value=''; pctOut.style.display='none'; });
+
+    /* ---------- EMI ---------- */
+    $('emi_calc').addEventListener('click', ()=>{
+      const P = parseFloat($('emi_p').value), annual = parseFloat($('emi_r').value), yrs = parseFloat($('emi_y').value);
+      const out = $('emi_out');
+      if (!isFinite(P) || P <= 0){ alert('Enter valid principal'); return; }
+      if (!isFinite(annual) || annual < 0){ alert('Enter valid annual rate'); return; }
+      if (!isFinite(yrs) || yrs <= 0){ alert('Enter valid tenure in years'); return; }
+
+      const r = (annual/100) / 12; // monthly rate
+      const n = Math.round(yrs * 12);
+      const pow = Math.pow(1 + r, n);
+      const emi = r === 0 ? (P / n) : (P * r * pow) / (pow - 1);
+      const emiR = round(emi,2);
+      const total = round(emiR * n,2);
+      const interest = round(total - P,2);
+
+      out.style.display='block'; out.className='result';
+      out.innerHTML = `<div style="font-size:15px">Monthly EMI: <strong>${emiR.toLocaleString()}</strong></div>
+                       <div style="margin-top:8px;color:var(--muted)">Total Payment: <strong>${total.toLocaleString()}</strong> | Interest: <strong>${interest.toLocaleString()}</strong></div>`;
+    });
+    $('emi_reset').addEventListener('click', ()=>{ $('emi_p').value=''; $('emi_r').value=''; $('emi_y').value=''; $('emi_out').style.display='none'; });
+
+  </script>
+</body>
+  </html>
